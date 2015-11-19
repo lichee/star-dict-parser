@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import me.lichee.bean.JpWord;
+import me.lichee.utils.MysqlUtil;
+import me.lichee.utils.WordReader;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
@@ -42,6 +46,11 @@ public class StarDictParser {
 	
 	//随机读取字典内容
 	private RandomAccessFile randomAccessFile;
+	
+	//重复的单词
+	public static Map<String,Integer> repeatWords = new HashMap<String,Integer>();
+	
+	int count = 0;
 	
 	public List<Map.Entry<String,WordPosition>> searchWord(String term){
 		//直接开头的结果
@@ -85,7 +94,6 @@ public class StarDictParser {
 	public boolean loadContentFile(String f){
 		try {
 			this.randomAccessFile=new java.io.RandomAccessFile(f, "r");
-			System.out.println("is file open valid: "+this.randomAccessFile.getFD().valid());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return false;
@@ -193,7 +201,31 @@ public class StarDictParser {
 					//System.out.println(" start: "+startpos+" , len:"+strlen);
 					//现在是一个完整的单词了
 					if(tword!=null && tword.trim().length()>0 && strlen<10000){
-						words.put(tword, new WordPosition(startpos,strlen));
+						//重复的单词序号处理
+						if(words.containsKey(tword)){
+							if(repeatWords.containsKey(tword)){
+								repeatWords.put(tword,repeatWords.get(tword)+1);
+							}else{
+								repeatWords.put(tword, 1);
+							}
+							words.put(tword+"("+repeatWords.get(tword)+")", new WordPosition(startpos,strlen));
+						}else{
+							words.put(tword, new WordPosition(startpos,strlen));
+						}
+						//单词存到数据库处理
+						if(strlen<0) continue;
+			    		String desc = getWordExplanation(startpos, strlen);
+			    		//System.out.println(tword);
+			    		//System.out.println(desc);
+			    		JpWord word = WordReader.parse(desc,tword);
+			    		try{
+			    			MysqlUtil.saveWords(word);
+			    		}catch(Exception e){
+			    			System.out.println("错误单词："+tword);
+			    			System.out.println(startpos+"~"+strlen);
+			    			e.printStackTrace();
+			    			System.exit(0);
+			    		}
 					}
 					mark+=8;
 				}else{
