@@ -14,7 +14,7 @@ public class MysqlUtil {
 	private static final String DBDRIVER = "com.mysql.jdbc.Driver";
 	public static final String DBURL="jdbc:mysql://localhost:3306/openjpdic?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull";//数据库端口号，demo为数据库名称  
     public static final String DBUSER="root";//mysql数据库用户名，默认为root  
-    public static final String DBPASS="c1990923!";//进入Mysql数据库的密码，跟自己设置的密码保持一致噢 
+    public static final String DBPASS="";//进入Mysql数据库的密码，跟自己设置的密码保持一致噢 
 	
     private static final String INSERT_WORD = "insert into words set hanzi=?,luoma=?,jiaming=?,yinbiao=?,yindiao=?,audio=?,inserter=?";
     private static final String INSERT_MEAN = "insert into means set wordId=?,sort=?,mean=?";
